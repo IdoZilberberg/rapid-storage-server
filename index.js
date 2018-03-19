@@ -15,12 +15,5 @@ app
   res.json({status: 'ok', machine: os.hostname()});
 })
 .use('/', filesRouter)
-.use((req, res) => {
-  res.render('404',
-    {locals: {'title': 'Not Found'}},
-    (err, str) => {
-      res.send(str, 404);
-    })
-  // .get('/', (req, res) => res.render('pages/index'))
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
-});
+// .get('/', (req, res) => res.render('pages/index'))
+.listen(PORT, () => console.log(`Listening on ${ PORT }`));
