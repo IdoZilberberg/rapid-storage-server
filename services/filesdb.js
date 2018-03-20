@@ -1,5 +1,6 @@
 const firebase = require('firebase');
-// const util = require('./util');
+const _ = require('lodash');
+const util = require('./util');
 
 const config = {
   apiKey: 'AIzaSyDs2TZ1qGAZ-_dO_mu9GF3d4MwdqdSWVEM',
@@ -16,6 +17,10 @@ const config = {
  */
 
 firebase.initializeApp(config);
+firebase.auth().signInWithEmailAndPassword('izilberberg@gmail.com', '123456')
+.then(() => {
+  console.log('Signed in to DB');
+});
 const db = firebase.database();
 const fullpathsRef = firebase.database().ref('/fullpaths');
 let localFullpathsDb;
@@ -27,32 +32,90 @@ fullpathsRef.on('value', snapshot => {
 
 const getFileDownloadLink = (token, fullPath) => {
 
-  const res = localFullpathsDb.ge
+  const res = localFullpathsDb.ge;
   // fullPath - if !token then it's a public file, o/w it's a private file and fullPath is a filePrivateId
 
 };
 
-const addFileMetadata = (token, fullPath, fileMetadata) => {
+const addFileMetadata = (token, fileMetadata) => {
 
-  const newFileKey = db.ref().child('fullpaths').push().key;
-  const updates = {
-    [`/fullpaths/${newFileKey}`]: fileMetadata
-  };
+  // const newFileKey = db.ref().child('fullpaths').push().key;
+  // const updates = {
+  //   // [`/fullpaths/${newFileKey}`]: fileMetadata
+  //   [`fileid/${fileMetadata.fileId}`]: fileMetadata
+  //   // [`/fullpath/${fileMetadata.path}/${fileMetadata.name}`]: fileMetadata
+  // };
 
-  return db.ref().update(updates);
-
-};
-
-const getFileMetadata = (token, fullPath) => {
-  return firebase.database().ref('/users/' + userId).once('value');
-};
-
-const setFilePublicFlag = (token, fullPath, publicFlag) => {
+  fileMetadata.fileId = fileMetadata.fileId.toUpperCase();
+  return db.ref(`fileid/${fileMetadata.fileId}`).set(fileMetadata);
 
 };
 
-const deleteFile = (token, fullPath) => {
+const getFileMetadata = (token, fileId, fullPath) => {
 
+  const userId = util.getUserIdFromToken(token);
+
+  if(token && !userId)  {
+    return Promise.reject(new Error('not_found'));
+  }
+
+  fileId = fileId || '';
+  fileId = fileId.toUpperCase();
+  return db.ref(`fileid/${fileId}`).once('value')
+  .then(response => {
+    if(fileId)  {
+
+    }
+    const files = fileId ? [response.val()] : _.map(response.val());
+    const filtered = _.filter(files, file => {
+      if(fullPath && fullPath !== `${file.path}${file.name}`) {
+        return false;
+      }
+
+      if(userId && userId !== file.ownerUserId) {
+        return false;
+      }
+
+      return true;
+
+    });
+    return filtered;
+  });
+
+};
+
+// Find matching file(s) to the given fullPath
+
+
+
+// };
+
+const setFileFlags = (token, fileId, publicFlag, undeleteFlag) => {
+  return firebase.database().ref(`fileid/${fileId}`).once('value')
+  .then(response => {
+    const fileMetadata = response.val();
+    fileMetadata.isPublic = publicFlag;
+    if(undeleteFlag)  {
+      fileMetadata.deletionDate = null;
+    }
+    // const updates = {
+    //   [`fileid/${fileMetadata.fileId}`]: fileMetadata,
+    //   // [`fullpath/${fileMetadata.path}/${fileMetadata.name}`]: fileMetadata
+    // };
+    console.log(`Setting public flag of ${fileId} to ${publicFlag}. UndeleteFlag=${undeleteFlag}`);
+    return db.ref(`fileid/${fileMetadata.fileId}`).set(fileMetadata);
+    // return db.ref().update(updates);
+  });
+};
+
+const deleteFile = (token, fileId) => {
+
+  return firebase.database().ref(`fileid/${fileId}`).once('value')
+  .then(response => {
+    const fileMetadata = response.val();
+    fileMetadata.deletionDate = new Date().toISOString();
+    return db.ref(`fileid/${fileMetadata.fileId}`).set(fileMetadata);
+  });
 
 
 };
@@ -61,7 +124,7 @@ module.exports = {
   getFileDownloadLink: getFileDownloadLink,
   addFileMetadata: addFileMetadata,
   getFileMetadata: getFileMetadata,
-  setFilePublicFlag: setFilePublicFlag,
+  setFileFlags: setFileFlags,
   deleteFile: deleteFile
 };
 

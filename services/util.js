@@ -7,6 +7,21 @@ const generatePrivateFileId = () => {
   return text;
 };
 
+// Hard-coded for the purpose of the exercise
+const users = {
+  'usr1tok': 'user1',
+  'usr2tok': 'user2',
+  'usr3tok': 'user3'
+};
+
+const getUserIdFromToken = (token) => {
+  if(!token)  {
+    return null;
+  }
+  return users[token];
+};
+
 module.exports = {
-  generatePrivateFileId: generatePrivateFileId
+  generatePrivateFileId: generatePrivateFileId,
+  getUserIdFromToken: getUserIdFromToken
 };
