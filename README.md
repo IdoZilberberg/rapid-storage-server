@@ -8,7 +8,7 @@ The other part is the [WEB CLIENT](https://github.com/IdoZilberberg/rapid-storag
 * Install [Node/npm](https://nodejs.org/en/)
 * Clone the repo: `git clone https://github.com/IdoZilberberg/rapid-storage-server.git`
 * Run `npm install`
-* Start the server: `node index.js`. It will listen on port 5000.
+* Start the server: `node index.js`. It will listen on port 5000 which the [WEB CLIENT](https://github.com/IdoZilberberg/rapid-storage-web) sends its requests to.
 
 ## Architecture
 
@@ -54,3 +54,4 @@ For small scale, it is enough to have a single Node.js app that:
 ## Stuff I didn't do
 * It is not possible to download files by directly calling an API (from Postman for example) - the sevrer does not actually transfer file data, only download URLs. The client actually downloads/uploads files. I think this is a sensible choice anyway but the assignment instructions did ask for direct download to be implemented.
 * Planned to deploy on Heroku - both the client and server, but this didn't work out in time. 
+* Unit tests with Mocha & Chai
